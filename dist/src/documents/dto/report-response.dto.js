@@ -54,6 +54,7 @@ class AnalysisReportDto {
     id;
     overallRiskScore;
     summary;
+    textContent;
     clauses;
 }
 exports.AnalysisReportDto = AnalysisReportDto;
@@ -71,6 +72,14 @@ __decorate([
     }),
     __metadata("design:type", String)
 ], AnalysisReportDto.prototype, "summary", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        required: false,
+        nullable: true,
+        example: 'The full text of the lease...',
+    }),
+    __metadata("design:type", Object)
+], AnalysisReportDto.prototype, "textContent", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ type: [ReportClauseDto] }),
     __metadata("design:type", Array)

@@ -57,6 +57,7 @@ export class AnalysisService {
           documentId,
           overallRiskScore: analysisResult.overallRiskScore,
           summary: analysisResult.summary,
+          textContent, // Save the full extracted text here
           clauses: {
             create: analysisResult.clauses.map((c: any) => ({
               clauseType: c.clauseType as ClauseType,
@@ -99,8 +100,8 @@ export class AnalysisService {
           {
             "clauseType": "OMISSION" or "EXISTING",
             "severity": "HIGH" or "MEDIUM" or "LOW",
-            "originalText": "<string, the exact text from the lease if EXISTING, or null if OMISSION>",
-            "explanation": "<string, plain English explanation of the risk>",
+            "originalText": "<string, the EXACT quoted text from the document if EXISTING. If OMISSION, use the string 'Not found in document'>",
+            "explanation": "<string, plain English explanation of why this is a risk for the tenant>",
             "suggestedChange": "<string, what exactly to ask the landlord to add/change>",
             "lawReference": "<string, e.g., 'Lagos State Tenancy Law 2011 Section X'>"
           }

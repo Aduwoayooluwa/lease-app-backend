@@ -12,29 +12,30 @@ export declare class DocumentsController {
         report: ({
             clauses: {
                 id: string;
-                createdAt: Date;
-                updatedAt: Date;
-                reportId: string;
                 clauseType: import("@prisma/client").$Enums.ClauseType;
                 severity: import("@prisma/client").$Enums.SeverityLevel;
                 originalText: string | null;
                 explanation: string;
                 suggestedChange: string;
                 lawReference: string | null;
+                createdAt: Date;
+                updatedAt: Date;
+                reportId: string;
             }[];
         } & {
             id: string;
+            overallRiskScore: number;
+            summary: string | null;
+            textContent: string | null;
             createdAt: Date;
             updatedAt: Date;
             documentId: string;
-            overallRiskScore: number;
-            summary: string | null;
         }) | null;
     } & {
         id: string;
+        status: import("@prisma/client").$Enums.DocumentStatus;
         originalFileName: string;
         fileUrl: string;
-        status: import("@prisma/client").$Enums.DocumentStatus;
         createdAt: Date;
         updatedAt: Date;
         userId: string;

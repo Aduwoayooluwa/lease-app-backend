@@ -36,6 +36,13 @@ export class AnalysisReportDto {
   })
   summary: string;
 
+  @ApiProperty({
+    required: false,
+    nullable: true,
+    example: 'The full text of the lease...',
+  })
+  textContent: string | null;
+
   @ApiProperty({ type: [ReportClauseDto] })
   clauses: ReportClauseDto[];
 }

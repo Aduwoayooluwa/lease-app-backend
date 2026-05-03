@@ -12,6 +12,7 @@ export declare class AnalysisReportDto {
     id: string;
     overallRiskScore: number;
     summary: string;
+    textContent: string | null;
     clauses: ReportClauseDto[];
 }
 export declare class DocumentReportResponseDto {
