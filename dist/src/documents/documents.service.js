@@ -61,30 +61,48 @@ let DocumentsService = DocumentsService_1 = class DocumentsService {
         this.analysisService = analysisService;
         this.storageService = storageService;
     }
-    async uploadAndProcess(file, providedUserId) {
-        if (!file || file.mimetype !== 'application/pdf') {
-            throw new common_1.BadRequestException('Only PDF files are supported currently.');
+    async uploadAndProcess(userId, file, content) {
+        let finalBuffer;
+        let fileName;
+        let mimetype;
+        let originalName;
+        let isText = false;
+        if (file) {
+            if (file.mimetype !== 'application/pdf') {
+                throw new common_1.BadRequestException('Only PDF files are supported currently.');
+            }
+            finalBuffer = file.buffer;
+            originalName = file.originalname;
+            mimetype = file.mimetype;
+            const fileExtension = path.extname(file.originalname);
+            fileName = `${crypto.randomUUID()}${fileExtension}`;
         }
-        if (!providedUserId) {
-            throw new common_1.BadRequestException('User ID is required from the authentication token.');
+        else if (content) {
+            finalBuffer = Buffer.from(content, 'utf-8');
+            originalName = 'pasted-agreement.txt';
+            mimetype = 'text/plain';
+            fileName = `${crypto.randomUUID()}.txt`;
+            isText = true;
         }
-        const userId = providedUserId;
-        const fileExtension = path.extname(file.originalname);
-        const fileName = `${crypto.randomUUID()}${fileExtension}`;
-        const fileUrl = await this.storageService.uploadFile(file.buffer, fileName, file.mimetype);
+        else {
+            throw new common_1.BadRequestException('No content provided for analysis.');
+        }
+        const fileUrl = await this.storageService.uploadFile(finalBuffer, fileName, mimetype);
         const document = await this.prisma.document.create({
             data: {
                 userId,
-                originalFileName: file.originalname,
+                originalFileName: originalName,
                 fileUrl,
                 status: client_1.DocumentStatus.PENDING,
             },
         });
-        this.analysisService.analyzeDocument(document.id, file.buffer).catch((err) => {
+        this.analysisService
+            .analyzeDocument(document.id, finalBuffer, isText)
+            .catch((err) => {
             this.logger.error(`Analysis failed for document ${document.id}:`, err);
         });
         return {
-            message: 'Document uploaded successfully and is being analyzed',
+            message: 'Lease content received successfully and is being analyzed',
             documentId: document.id,
             status: document.status,
         };

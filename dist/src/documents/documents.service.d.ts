@@ -7,7 +7,7 @@ export declare class DocumentsService {
     private readonly storageService;
     private readonly logger;
     constructor(prisma: PrismaService, analysisService: AnalysisService, storageService: StorageService);
-    uploadAndProcess(file: Express.Multer.File, providedUserId?: string): Promise<{
+    uploadAndProcess(userId: string, file?: Express.Multer.File, content?: string): Promise<{
         message: string;
         documentId: string;
         status: import("@prisma/client").$Enums.DocumentStatus;
@@ -18,29 +18,29 @@ export declare class DocumentsService {
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
+                reportId: string;
                 clauseType: import("@prisma/client").$Enums.ClauseType;
                 severity: import("@prisma/client").$Enums.SeverityLevel;
                 originalText: string | null;
                 explanation: string;
                 suggestedChange: string;
                 lawReference: string | null;
-                reportId: string;
             }[];
         } & {
             id: string;
             createdAt: Date;
             updatedAt: Date;
+            documentId: string;
             overallRiskScore: number;
             summary: string | null;
-            documentId: string;
         }) | null;
     } & {
         id: string;
-        userId: string;
         originalFileName: string;
         fileUrl: string;
         status: import("@prisma/client").$Enums.DocumentStatus;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
     }>;
 }

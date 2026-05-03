@@ -31,17 +31,23 @@ let AnalysisService = AnalysisService_1 = class AnalysisService {
         const apiKey = this.configService.get('OPENAI_API_KEY');
         this.openai = new openai_1.default({ apiKey });
     }
-    async analyzeDocument(documentId, fileBuffer) {
+    async analyzeDocument(documentId, fileBuffer, isText = false) {
         try {
             this.logger.log(`Starting analysis for document: ${documentId}`);
             await this.prisma.document.update({
                 where: { id: documentId },
                 data: { status: client_1.DocumentStatus.ANALYZING },
             });
-            const parser = new pdf_parse_1.PDFParse({ data: fileBuffer });
-            const pdfData = await parser.getText();
-            const textContent = pdfData.text;
-            await parser.destroy();
+            let textContent;
+            if (isText) {
+                textContent = fileBuffer.toString('utf-8');
+            }
+            else {
+                const parser = new pdf_parse_1.PDFParse({ data: fileBuffer });
+                const pdfData = await parser.getText();
+                textContent = pdfData.text;
+                await parser.destroy();
+            }
             this.logger.log(`Extracted ${textContent.length} characters from document ${documentId}`);
             const analysisResult = await this.performAIAnalysis(textContent);
             await this.prisma.analysisReport.create({

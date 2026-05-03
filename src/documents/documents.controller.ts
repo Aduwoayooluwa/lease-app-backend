@@ -7,6 +7,7 @@ import {
   UploadedFile,
   Body,
   UseGuards,
+  BadRequestException,
 } from '@nestjs/common';
 import { DocumentsService } from './documents.service';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -50,7 +51,23 @@ export class DocumentsController {
     @Body() body: UploadDocumentDto,
     @CurrentUser() user: any,
   ) {
-    return this.documentsService.uploadAndProcess(file, user.id);
+    if (file && body.content) {
+      throw new BadRequestException(
+        'You cannot provide both a file and text content. Please choose one.',
+      );
+    }
+
+    if (!file && !body.content) {
+      throw new BadRequestException(
+        'Please provide either a lease agreement file or paste the text content.',
+      );
+    }
+
+    return this.documentsService.uploadAndProcess(
+      user.id,
+      file,
+      body.content,
+    );
   }
 
   @Get(':id/report')

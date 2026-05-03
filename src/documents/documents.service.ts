@@ -15,38 +15,62 @@ export class DocumentsService {
     private readonly storageService: StorageService,
   ) {}
 
-  async uploadAndProcess(file: Express.Multer.File, providedUserId?: string) {
-    if (!file || file.mimetype !== 'application/pdf') {
-      throw new BadRequestException('Only PDF files are supported currently.');
+  async uploadAndProcess(
+    userId: string,
+    file?: Express.Multer.File,
+    content?: string,
+  ) {
+    let finalBuffer: Buffer;
+    let fileName: string;
+    let mimetype: string;
+    let originalName: string;
+    let isText = false;
+
+    if (file) {
+      if (file.mimetype !== 'application/pdf') {
+        throw new BadRequestException('Only PDF files are supported currently.');
+      }
+      finalBuffer = file.buffer;
+      originalName = file.originalname;
+      mimetype = file.mimetype;
+      const fileExtension = path.extname(file.originalname);
+      fileName = `${crypto.randomUUID()}${fileExtension}`;
+    } else if (content) {
+      finalBuffer = Buffer.from(content, 'utf-8');
+      originalName = 'pasted-agreement.txt';
+      mimetype = 'text/plain';
+      fileName = `${crypto.randomUUID()}.txt`;
+      isText = true;
+    } else {
+      throw new BadRequestException('No content provided for analysis.');
     }
 
-    if (!providedUserId) {
-      throw new BadRequestException('User ID is required from the authentication token.');
-    }
-    const userId = providedUserId;
-
-    // Save file to Cloudflare R2
-    const fileExtension = path.extname(file.originalname);
-    const fileName = `${crypto.randomUUID()}${fileExtension}`;
-    const fileUrl = await this.storageService.uploadFile(file.buffer, fileName, file.mimetype);
+    // Save to Cloudflare R2
+    const fileUrl = await this.storageService.uploadFile(
+      finalBuffer,
+      fileName,
+      mimetype,
+    );
 
     // Create DB Record
     const document = await this.prisma.document.create({
       data: {
         userId,
-        originalFileName: file.originalname,
+        originalFileName: originalName,
         fileUrl,
         status: DocumentStatus.PENDING,
       },
     });
 
-    // Trigger analysis asynchronously, passing the buffer directly to save time
-    this.analysisService.analyzeDocument(document.id, file.buffer).catch((err) => {
-      this.logger.error(`Analysis failed for document ${document.id}:`, err);
-    });
+    // Trigger analysis asynchronously
+    this.analysisService
+      .analyzeDocument(document.id, finalBuffer, isText)
+      .catch((err) => {
+        this.logger.error(`Analysis failed for document ${document.id}:`, err);
+      });
 
     return {
-      message: 'Document uploaded successfully and is being analyzed',
+      message: 'Lease content received successfully and is being analyzed',
       documentId: document.id,
       status: document.status,
     };

@@ -28,7 +28,13 @@ let DocumentsController = class DocumentsController {
         this.documentsService = documentsService;
     }
     async uploadFile(file, body, user) {
-        return this.documentsService.uploadAndProcess(file, user.id);
+        if (file && body.content) {
+            throw new common_1.BadRequestException('You cannot provide both a file and text content. Please choose one.');
+        }
+        if (!file && !body.content) {
+            throw new common_1.BadRequestException('Please provide either a lease agreement file or paste the text content.');
+        }
+        return this.documentsService.uploadAndProcess(user.id, file, body.content);
     }
     async getReport(id) {
         return this.documentsService.getDocumentReport(id);

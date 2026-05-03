@@ -7,7 +7,17 @@ export class UploadDocumentDto {
     type: 'string',
     format: 'binary',
     description: 'The lease agreement file (PDF)',
+    required: false,
   })
   @IsOptional()
   file: any;
+
+  @ApiProperty({
+    type: 'string',
+    description: 'The lease agreement text content (pasted)',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  content?: string;
 }

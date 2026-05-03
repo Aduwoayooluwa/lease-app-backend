@@ -18,22 +18,32 @@ export class AnalysisService {
     this.openai = new OpenAI({ apiKey });
   }
 
-  async analyzeDocument(documentId: string, fileBuffer: Buffer): Promise<void> {
+  async analyzeDocument(
+    documentId: string,
+    fileBuffer: Buffer,
+    isText = false,
+  ): Promise<void> {
     try {
       this.logger.log(`Starting analysis for document: ${documentId}`);
-
+ 
       // Update status to ANALYZING
       await this.prisma.document.update({
         where: { id: documentId },
         data: { status: DocumentStatus.ANALYZING },
       });
-
-      // Extract text from PDF buffer
-      const parser = new PDFParse({ data: fileBuffer });
-      const pdfData = await parser.getText();
-      const textContent = pdfData.text;
-      await parser.destroy();
-
+ 
+      let textContent: string;
+ 
+      if (isText) {
+        textContent = fileBuffer.toString('utf-8');
+      } else {
+        // Extract text from PDF buffer
+        const parser = new PDFParse({ data: fileBuffer });
+        const pdfData = await parser.getText();
+        textContent = pdfData.text;
+        await parser.destroy();
+      }
+ 
       this.logger.log(
         `Extracted ${textContent.length} characters from document ${documentId}`,
       );

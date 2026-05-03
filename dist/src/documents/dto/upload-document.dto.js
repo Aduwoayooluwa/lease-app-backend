@@ -14,6 +14,7 @@ const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 class UploadDocumentDto {
     file;
+    content;
 }
 exports.UploadDocumentDto = UploadDocumentDto;
 __decorate([
@@ -21,8 +22,19 @@ __decorate([
         type: 'string',
         format: 'binary',
         description: 'The lease agreement file (PDF)',
+        required: false,
     }),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Object)
 ], UploadDocumentDto.prototype, "file", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        type: 'string',
+        description: 'The lease agreement text content (pasted)',
+        required: false,
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], UploadDocumentDto.prototype, "content", void 0);
 //# sourceMappingURL=upload-document.dto.js.map
