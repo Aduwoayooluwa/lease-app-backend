@@ -1,0 +1,72 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String     @id @default(uuid())
+  email        String     @unique
+  passwordHash String
+  name         String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  documents Document[]
+}
+
+model Document {
+  id               String          @id @default(uuid())
+  userId           String
+  user             User            @relation(fields: [userId], references: [id])
+  originalFileName String
+  fileUrl          String
+  status           DocumentStatus  @default(PENDING)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  report           AnalysisReport?
+}
+
+enum DocumentStatus {
+  PENDING
+  ANALYZING
+  COMPLETED
+  FAILED
+}
+
+model AnalysisReport {
+  id               String         @id @default(uuid())
+  documentId       String         @unique
+  document         Document       @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  overallRiskScore Int            @default(0) // 0-100 scale
+  summary          String?
+  clauses          ReportClause[]
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+}
+
+model ReportClause {
+  id              String         @id @default(uuid())
+  reportId        String
+  report          AnalysisReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  clauseType      ClauseType     // OMISSION or EXISTING
+  severity        SeverityLevel  // RED, YELLOW, GREEN
+  originalText    String?        // Null if it's an omission
+  explanation     String         // Plain English explanation
+  suggestedChange String         // What to ask the landlord
+  lawReference    String?        // e.g., "Lagos State Tenancy Law 2011"
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+enum ClauseType {
+  OMISSION
+  EXISTING
+}
+
+enum SeverityLevel {
+  HIGH
+  MEDIUM
+  LOW
+}

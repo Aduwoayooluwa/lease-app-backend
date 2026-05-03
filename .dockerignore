@@ -1,0 +1,11 @@
+.git
+.gitignore
+node_modules
+dist
+uploads
+coverage
+test
+npm-debug.log
+.env
+README.md
+seed.ts
